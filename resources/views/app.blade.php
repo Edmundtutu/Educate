@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Educate</title>
     @viteReactRefresh
-    @vite(['resources/css/app.css', 'resources/js/app.tsx'])
+    @vite(['resources/css/app.css','resources/css/navbar.css', 'resources/css/dashboard.css', 'resources/js/app.tsx'])
 </head>
 <body class="antialiased">
     @inertia
