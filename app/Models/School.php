@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\Course;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class School extends Model
 {
@@ -16,7 +18,7 @@ class School extends Model
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'schools_users');
+        return $this->belongsToMany(User::class, 'school_user');
     }
 
     public function classes()

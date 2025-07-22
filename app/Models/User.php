@@ -55,7 +55,7 @@ class User extends Authenticatable
      * */
     public function schools()
     {
-        return $this->belongsToMany(School::class, 'school_users');
+        return $this->belongsToMany(School::class, 'school_user');
     }
     /**
      * MANY TO MANY relationship
