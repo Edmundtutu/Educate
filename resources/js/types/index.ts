@@ -13,7 +13,9 @@ export interface User {
     enrolled_courses?: number[];
     enrolled_at?: Record<number, string>; // courseId -> enrollment date
 }
-
+export interface Auth {
+    user: User;
+}
 export interface School {
     id: number;
     name: string;
@@ -103,6 +105,13 @@ export interface PageProps {
         error?: string;
         warning?: string;
     };
+}
+
+export interface SharedData {
+    name: string;
+    quote: { message: string; author: string };
+    auth: Auth;
+    [key: string]: unknown;
 }
 
 // Helper functions for role checking (utility functions)

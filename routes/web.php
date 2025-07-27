@@ -35,17 +35,31 @@ Route::middleware(['auth'])->group(function () {
         ]);
     });
 
-    // Resource routes for managing entities
-    Route::resource('schools', SchoolController::class);
-    Route::resource('users', UserController::class);
-    Route::resource('courses', CourseController::class);
-    Route::resource('materials', MaterialController::class);
+    // Super admin only routes
+    Route::middleware(['role:super_admin'])->group(function () {
+        Route::resource('schools', SchoolController::class);
+                Route::get('/admin/create-school', [SchoolController::class, 'create'])->name('schools.create');
+        Route::post('/schools/{id}/restore', [SchoolController::class, 'restore'])->name('schools.restore');
+        Route::delete('/schools/{id}/force-delete', [SchoolController::class, 'forceDelete'])->name('schools.force-delete');
+    });
 
-    // Explicit routes for pages that might not fit resource naming
-    Route::get('/materials/upload', [MaterialController::class, 'create'])->name('materials.upload');
-    Route::get('/admin/create-user', [UserController::class, 'create'])->name('users.create');
-    Route::get('/admin/create-school', [SchoolController::class, 'create'])->name('schools.create');
-    // Add more protected routes as needed
+    // School admin or super admin routes
+    Route::middleware(['role:super_admin,school_admin'])->group(function () {
+        Route::resource('users', UserController::class);
+        Route::get('/admin/create-user', [UserController::class, 'create'])->name('users.create');
+    });
+
+    // Teacher, school admin, or super admin routes
+    Route::middleware(['role:super_admin,school_admin,teacher'])->group(function () {
+        Route::resource('courses', CourseController::class);
+        Route::resource('materials', MaterialController::class);
+        Route::get('/materials/upload', [MaterialController::class, 'create'])->name('materials.upload');
+    });
+
+    // Student accessible routes
+    Route::middleware(['role:super_admin,school_admin,teacher,student'])->group(function () {
+        // Add student-specific routes here
+    });
 
     // Add a route for selecting school if user belongs to multiple schools
     Route::get('/select-school', function () {
@@ -56,24 +70,31 @@ Route::middleware(['auth'])->group(function () {
         ]);
     })->name('select-school');
     Route::post('/select-school-action', [AuthenticatedSessionController::class, 'selectSchool']);
+
+    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
+        ->name('logout');
 });
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
-                ->name('login');
+        ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 });
 
-Route::middleware('auth')->group(function () {
-    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-                ->name('logout');
-});
-
 Route::get('/unauthorized', fn () => Inertia::render('Unauthorized'));
 
+// Test route for role middleware
+Route::get('/test-role', function () {
+    return response()->json([
+        'message' => 'You have access to this route',
+        'user' => Auth::user(),
+        'selected_school' => session('selected_school_id')
+    ]);
+})->middleware(['auth', 'role:super_admin']);
+
 Route::get('/', function () {
-    return Inertia::render('Login', [
+    return Inertia::render('welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,

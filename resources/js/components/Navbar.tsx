@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/inertia-react';
 import { Inertia } from '@inertiajs/inertia';
 // If you get an error for lucide-react, install it with: npm install lucide-react
@@ -8,6 +8,12 @@ function Navbar() {
   const { auth } = (usePage() as any).props;
   const user = auth?.user;
   // If you have school info in shared props, get it here as well
+
+  useEffect(() => {
+    if (!auth || !auth.user) {
+      Inertia.visit('/login');
+    }
+  }, [auth]);
 
   const handleLogout = () => {
     Inertia.post('/logout');
@@ -74,7 +80,7 @@ function Navbar() {
                 <span>{item.label}</span>
               </Link>
             ))}
-            
+
             <div className="flex items-center space-x-3 border-l border-gray-200 pl-4">
               <div className="text-sm">
                 <p className="font-medium text-gray-900">{user?.name}</p>

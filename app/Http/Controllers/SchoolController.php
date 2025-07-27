@@ -11,7 +11,8 @@ class SchoolController extends Controller
 {
     public function index()
     {
-        $schools = School::all();
+        // Super admin should see all schools, including soft-deleted ones
+        $schools = School::withTrashed()->get();
         return Inertia::render('Schools', [
             'schools' => $schools,
         ]);
@@ -55,6 +56,28 @@ class SchoolController extends Controller
     {
         $school->delete();
         return redirect()->route('schools.index')
-            ->with('success', 'School deleted successfully.');
+            ->with('success', 'School soft-deleted successfully.');
     }
-} 
+
+    /**
+     * Restore a soft-deleted school.
+     */
+    public function restore($id)
+    {
+        $school = School::withTrashed()->findOrFail($id);
+        $school->restore();
+        return redirect()->route('schools.index')
+            ->with('success', 'School restored successfully.');
+    }
+
+    /**
+     * Permanently delete a school.
+     */
+    public function forceDelete($id)
+    {
+        $school = School::withTrashed()->findOrFail($id);
+        $school->forceDelete();
+        return redirect()->route('schools.index')
+            ->with('success', 'School permanently deleted successfully.');
+    }
+}

@@ -35,11 +35,26 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        $selectedSchoolId = $request->session()->get('selected_school_id');
+
+        // Get selected school details if user is authenticated and has a selected school
+        $selectedSchool = null;
+        if ($user && $selectedSchoolId) {
+            $selectedSchool = $user->schools()->where('schools.id', $selectedSchoolId)->first();
+        }
+
         return array_merge(parent::share($request), [
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
+                'isLoggedIn' => $user !== null,
             ],
-            'selected_school_id' => $request->session()->get('selected_school_id'),
+            'selected_school_id' => $selectedSchoolId,
+            'selected_school' => $selectedSchool,
+            'flash' => [
+                'message' => $request->session()->get('message'),
+                'error' => $request->session()->get('error'),
+            ],
         ]);
     }
 }
